@@ -28,10 +28,21 @@ def init_db():
         CREATE TABLE IF NOT EXISTS tasks (
             id SERIAL PRIMARY KEY,
             title TEXT NOT NULL,
-            completed INTEGER DEFAULT 0
+            description TEXT,
+            priority INTEGER DEFAULT 1,
+            due_date DATE,
+            status TEXT DEFAULT 'todo',
+            completed INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT NOW()
         )
         """
     )
+
+    cursor.execute("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS description TEXT")
+    cursor.execute("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS priority INTEGER DEFAULT 1")
+    cursor.execute("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS due_date DATE")
+    cursor.execute("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'todo'")
+    cursor.execute("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW()")
 
     conn.commit()
     cursor.close()
