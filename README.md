@@ -2,6 +2,17 @@
 
 Projeto academico simples de gerenciamento de tarefas com arquitetura em 3 camadas: frontend, backend e banco de dados.
 
+## Roadmap
+- 1ª Atividade complementar: 
+Listar, adicionar e remover tarefas. 
+Docker para inicialização. 
+
+- 2ª Atividade complementar:
+Modo de vizualização kanban para tarefas.
+
+- 3ª Atividade complementar:
+Possibilitar e reportar comentários dentro das tarefas.
+
 ## Tecnologias usadas
 - Python + Flask
 - PostgreSQL
@@ -47,3 +58,4 @@ Abra o arquivo `frontend/index.html` no navegador.
 ## Swagger (documentacao da API)
 Acesse:
 - `http://localhost:3000/docs/`
+
