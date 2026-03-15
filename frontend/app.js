@@ -83,6 +83,22 @@ function App() {
     }
   }
 
+  function onDragStart(e, tarefaId) {
+    e.dataTransfer.setData("text/plain", String(tarefaId));
+  }
+
+  function onDragOver(e) {
+    e.preventDefault();
+  }
+
+  async function onDrop(e, novoStatus) {
+    e.preventDefault();
+    const tarefaId = e.dataTransfer.getData("text/plain");
+    if (tarefaId) {
+      await atualizarStatus(tarefaId, novoStatus);
+    }
+  }
+
   async function deletarTarefa(id) {
     try {
       setErro("");
@@ -143,13 +159,13 @@ function App() {
       {carregando && <p className="muted">Carregando...</p>}
 
       <div className="board">
-        <div className="column">
+        <div className="column" onDragOver={onDragOver} onDrop={(e) => onDrop(e, "todo")}>
           <h2>A Fazer</h2>
           <ul>
             {listaTarefas
               .filter((t) => (t.status || "todo") === "todo")
               .map((tarefa) => (
-                <li key={tarefa.id}>
+                <li key={tarefa.id} draggable onDragStart={(e) => onDragStart(e, tarefa.id)}>
                   <div className="task-info">
                     <strong>{tarefa.title}</strong>
                     {tarefa.description && (
@@ -179,13 +195,13 @@ function App() {
           </ul>
         </div>
 
-        <div className="column">
+        <div className="column" onDragOver={onDragOver} onDrop={(e) => onDrop(e, "doing")}>
           <h2>Em Andamento</h2>
           <ul>
             {listaTarefas
               .filter((t) => (t.status || "todo") === "doing")
               .map((tarefa) => (
-                <li key={tarefa.id}>
+                <li key={tarefa.id} draggable onDragStart={(e) => onDragStart(e, tarefa.id)}>
                   <div className="task-info">
                     <strong>{tarefa.title}</strong>
                     {tarefa.description && (
@@ -221,13 +237,13 @@ function App() {
           </ul>
         </div>
 
-        <div className="column">
+        <div className="column" onDragOver={onDragOver} onDrop={(e) => onDrop(e, "done")}>
           <h2>Concluidas</h2>
           <ul>
             {listaTarefas
               .filter((t) => (t.status || "todo") === "done")
               .map((tarefa) => (
-                <li key={tarefa.id}>
+                <li key={tarefa.id} draggable onDragStart={(e) => onDragStart(e, tarefa.id)}>
                   <div className="task-info">
                     <strong>{tarefa.title}</strong>
                     {tarefa.description && (

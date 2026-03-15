@@ -77,6 +77,9 @@ li {
   justify-content: space-between;
   padding: 10px;
   border-bottom: 1px solid #e5e7eb;
+  background: #ffffff;
+  border-radius: 8px;
+  margin-bottom: 8px;
 }
 
 .row {
@@ -110,6 +113,11 @@ li {
 .column h2 {
   font-size: 16px;
   margin-bottom: 8px;
+}
+
+.column:hover {
+  outline: 2px dashed #d1d5db;
+  outline-offset: 2px;
 }
 
 .task-info {
