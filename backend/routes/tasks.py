@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 
-from db import execute, fetch_all
+from db import execute, execute_fetchone, fetch_all
 
 bp = Blueprint("tasks", __name__)
 
@@ -36,10 +36,20 @@ def listar_tarefas():
               status:
                 type: string
                 example: "todo"
+              comments_count:
+                type: integer
               created_at:
                 type: string
     """
-    tarefas = fetch_all("SELECT * FROM tasks ORDER BY id DESC")
+    tarefas = fetch_all(
+        """
+        SELECT
+          t.*,
+          (SELECT COUNT(*) FROM task_comments c WHERE c.task_id = t.id) AS comments_count
+        FROM tasks t
+        ORDER BY t.id DESC
+        """
+    )
     return jsonify(tarefas)
 
 
@@ -94,6 +104,8 @@ def criar_tarefa():
               type: string
             status:
               type: string
+            comments_count:
+              type: integer
       400:
         description: Erro de validacao
     """
@@ -137,7 +149,8 @@ def criar_tarefa():
         "priority": priority,
         "due_date": due_date,
         "status": status,
-        "completed": completed
+        "completed": completed,
+        "comments_count": 0
     }), 201
 
 
@@ -245,3 +258,109 @@ def excluir_tarefa(task_id):
 
     execute("DELETE FROM tasks WHERE id = %s", (task_id,))
     return jsonify({"mensagem": "Tarefa deletada com sucesso"})
+
+
+@bp.get("/<int:task_id>/comments")
+def listar_comentarios(task_id):
+    """
+    Lista comentarios de uma tarefa
+    ---
+    tags:
+      - Comentarios
+    parameters:
+      - in: path
+        name: task_id
+        required: true
+        type: integer
+    responses:
+      200:
+        description: Lista de comentarios
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              task_id:
+                type: integer
+              content:
+                type: string
+              created_at:
+                type: string
+      404:
+        description: Tarefa nao encontrada
+    """
+    tarefas = fetch_all("SELECT id FROM tasks WHERE id = %s", (task_id,))
+    if not tarefas:
+        return jsonify({"erro": "Tarefa nao encontrada"}), 404
+
+    comentarios = fetch_all(
+        "SELECT id, task_id, content, created_at FROM task_comments WHERE task_id = %s ORDER BY id ASC",
+        (task_id,)
+    )
+    return jsonify(comentarios)
+
+
+@bp.post("/<int:task_id>/comments")
+def criar_comentario(task_id):
+    """
+    Cria um comentario em uma tarefa
+    ---
+    tags:
+      - Comentarios
+    parameters:
+      - in: path
+        name: task_id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - content
+          properties:
+            content:
+              type: string
+              example: "Esse e um comentario"
+    responses:
+      201:
+        description: Comentario criado
+        schema:
+          type: object
+          properties:
+            id:
+              type: integer
+            task_id:
+              type: integer
+            content:
+              type: string
+            created_at:
+              type: string
+      400:
+        description: Erro de validacao
+      404:
+        description: Tarefa nao encontrada
+    """
+    dados = request.get_json(silent=True) or {}
+    content = (dados.get("content") or "").strip()
+
+    if not content:
+        return jsonify({"erro": "O comentario e obrigatorio"}), 400
+
+    tarefas = fetch_all("SELECT id FROM tasks WHERE id = %s", (task_id,))
+    if not tarefas:
+        return jsonify({"erro": "Tarefa nao encontrada"}), 404
+
+    comentario = execute_fetchone(
+        """
+        INSERT INTO task_comments (task_id, content)
+        VALUES (%s, %s)
+        RETURNING id, task_id, content, created_at
+        """,
+        (task_id, content)
+    )
+
+    return jsonify(comentario), 201

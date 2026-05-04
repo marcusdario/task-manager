@@ -54,8 +54,10 @@ Abra o arquivo `frontend/index.html` no navegador.
 - `PUT /tasks/:id/status` -> atualiza o status da tarefa
   - body JSON: `{ "status": "doing" }`
 - `DELETE /tasks/:id` -> remove tarefa
+- `GET /tasks/:id/comments` -> lista comentarios da tarefa
+- `POST /tasks/:id/comments` -> cria comentario na tarefa
+  - body JSON: `{ "content": "Meu comentario" }`
 
 ## Swagger (documentacao da API)
 Acesse:
 - `http://localhost:3000/docs/`
-

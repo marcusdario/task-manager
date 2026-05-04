@@ -44,6 +44,17 @@ def init_db():
     cursor.execute("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'todo'")
     cursor.execute("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW()")
 
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS task_comments (
+            id SERIAL PRIMARY KEY,
+            task_id INTEGER NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+            content TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT NOW()
+        )
+        """
+    )
+
     conn.commit()
     cursor.close()
     conn.close()
@@ -77,3 +88,17 @@ def execute(query, params=None, returning_id=False):
     conn.close()
 
     return last_id
+
+
+def execute_fetchone(query, params=None):
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    cursor.execute(query, params or ())
+    row = cursor.fetchone()
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return dict(row) if row else None
